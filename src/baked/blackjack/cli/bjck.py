@@ -14,7 +14,9 @@ def bjck():
 @click.argument("chart")
 def chart(chart: str):
     bs = BasicStrategy()
-    print(bs.get_chart(Chart(chart.upper())))
+    chart = bs.get_chart(Chart(chart.upper()))
+    for row in chart:
+        print("\t".join(row))
 
 
 @bjck.command()

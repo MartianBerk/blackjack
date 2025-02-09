@@ -1,8 +1,8 @@
 import enum
-import pandas as pd
 
-from typing import Dict, List
+from typing import List
 
+from baked.blackjack.basicstrategy.charts.h17 import HARD as H17_HARD, PAIR as H17_PAIR, SOFT as H17_SOFT
 from baked.blackjack.model.model import Card, Play
 
 
@@ -28,22 +28,19 @@ class Service:
 
     def __init__(self):
         self._ruleset: RuleSet = RuleSet.H17
-        self._charts: Dict[Chart, pd.DataFrame] = {}
         self._rules: List[Rule] = []
-
-    def _chart_path(self, chart: Chart) -> str:
-        return f"{self.DATA_ROOT}/basic-strategy/{self._ruleset.value.lower()}/{chart.value.lower()}.csv"
-
-    def _load_chart(self, chart: Chart) -> None:
-        if chart not in self._charts:
-            self._charts[chart] = pd.read_csv(self._chart_path(chart), dtype=str)
 
     def add_rule(self, rule: Rule):
         self._rules.append(rule)
 
-    def get_chart(self, chart: Chart) -> pd.DataFrame:
-        self._load_chart(chart)
-        return self._charts[chart]
+    def get_chart(self, chart: Chart) -> List[List]:
+        return {
+            RuleSet.H17: {
+                Chart.HARD: H17_HARD,
+                Chart.PAIR: H17_PAIR,
+                Chart.SOFT: H17_SOFT
+            }
+        }[self._ruleset][chart]
 
     def get_play(self, cards: List[Card], dealer_card: Card, force_no_pair: bool = False) -> Play:
         
@@ -85,11 +82,14 @@ class Service:
             lookup[0] = str(hand_total)
 
         lookup[1] = "A" if dealer_card == Card.ACE else str(dealer_card.value)
-        self._load_chart(chart_name)
-        chart = self._charts[chart_name]
+        chart = self.get_chart(chart_name)
 
-        play = chart.loc[chart["H"] == lookup[0], lookup[1]]
-        play = play.values[0]  # we know chart.loc will only ever return a single value
+        for x in range(1, len(chart)):
+            if chart[x][0] == lookup[0]:
+                for y, dh in enumerate(chart[0]):
+                    if dh == lookup[1]:
+                        p = chart[x][y]
+                        break
 
         play = {
             Chart.HARD: {
@@ -109,7 +109,7 @@ class Service:
                 "Y": Play.SPLIT,
                 "YN": Play.SPLIT if self.double_after_split_allowed else None
             }
-        }[chart_name][play]
+        }[chart_name][p]
 
         # Recurse with force ignore split here
         if play is None:
