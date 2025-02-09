@@ -1,0 +1,15 @@
+# Built following tutorial: https://packaging.python.org/en/latest/tutorials/packaging-projects/
+# Python dependencies (build and twine) installed in .venv.
+# Utilizing ~/.pypirc file for settings. Will require /etc/hosts to be updated with pypi.baked.com to point to build server.
+#   - python -m build
+#   - python -m twine upload --repository baked dist/*
+#   - pip install baked-blackjack --index-url http://pypi.baked.com/simple --trusted-host pypi.baked.com
+# Current strategy is to supply username and password with the twine command.
+
+
+[build-system]
+requires = [
+    "setuptools>=61.0",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
