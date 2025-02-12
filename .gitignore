@@ -3,3 +3,5 @@
 .vscode
 data/basic-strategy/enhc
 resources
+
+__pycache__

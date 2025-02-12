@@ -87,11 +87,11 @@ def strategy_decks(double_down: bool, double_after_split: bool, surrender: bool,
 
 def strategy_practice(double_down: bool, double_after_split: bool, surrender: bool, ignore: str):
     if ignore:
-        valid_ignore: set = set(["ACE", "SPLIT"])
+        valid_ignore: set = set(["HARD", "SOFT", "PAIR"])
         ignore: set = set(ignore.split(","))
         if ignore.difference(valid_ignore):
             raise Exception("Invalid ignore setting")
-   
+
     bs = BasicStrategy()
     if double_down:
         bs.add_rule(Rule.ALLOW_DOUBLE)
@@ -106,10 +106,15 @@ def strategy_practice(double_down: bool, double_after_split: bool, surrender: bo
     render_card = lambda c: str(c.value) if c < Card.TEN else c.name[0]
 
     for player_hand, dealer in practice:
-        if ignore and "ACE" in ignore and (player_hand[0] == Card.ACE or player_hand[1] == Card.ACE):
-            skip += 1
-            continue
-        elif ignore and "SPLIT" in ignore and player_hand[0] == player_hand[1]:
+        if ignore and (player_hand[0] == Card.ACE or player_hand[1] == Card.ACE):
+            if "SOFT" in ignore:
+                skip += 1
+                continue
+        elif ignore and player_hand[0] == player_hand[1]:
+            if "PAIR" in ignore:
+                skip += 1
+                continue
+        elif ignore and "HARD" in ignore:
             skip += 1
             continue
 
@@ -151,5 +156,5 @@ def strategy_practice(double_down: bool, double_after_split: bool, surrender: bo
 
     print("---------------")
     print("")
-    print(f"Finished: {correct}/{total} correct{f' ({skip} skipped)' if skip else ''} \
-          in {round(total_time / total, 2)} secs per move")
+    print(f"Finished: {correct}/{total} correct{f' ({skip} skipped)' if skip else ''} "
+          f"in {round(total_time / total, 2) if total else 0} secs per move")
