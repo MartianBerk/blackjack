@@ -1,5 +1,6 @@
 import click
 
+from baked.blackjack.basicstrategy.practice.charts import full_practice_chart
 from baked.blackjack.basicstrategy.service import Chart, Service as BasicStrategy
 from baked.blackjack.cli.practice import strategy_decks, strategy_practice
 
@@ -13,9 +14,19 @@ def bjck():
 @click.argument("chart")
 def chart(chart: str):
     bs = BasicStrategy()
-    chart = bs.get_chart(Chart(chart.upper()))
-    for row in chart:
-        print("\t".join(row))
+
+    if chart.upper() == "PRACTICE":
+        for i, row in enumerate(full_practice_chart()):
+            if i == 0:
+                new_row = []
+                for v in row:
+                    new_row.append(f"  {v}")
+                row = new_row
+            print("\t".join(row))
+    else:
+        chart = bs.get_chart(Chart(chart.upper()))
+        for row in chart:
+            print("\t".join(row))
 
 
 @bjck.command()
